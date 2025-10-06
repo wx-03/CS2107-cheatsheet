@@ -45,6 +45,396 @@
 \fontsize{7}{8}\selectfont
 \fontfamily{qcs}\selectfont
 \begin{multicols*}{5}
-    Hello
+	\textbf{\uline{Topic 0}}
+
+	\textbf{CIA}
+	\begin{enumerate}
+		\item Confidentiality
+		      \begin{itemize}
+			      \item Prevention of unauthorized discolusre of information
+		      \end{itemize}
+		\item Integrity
+		      \begin{itemize}
+			      \item Prevention of unauthorized modification of information or processes
+			      \item Non-repudiation
+		      \end{itemize}
+		\item Availability
+		      \begin{itemize}
+			      \item Prevention of unauthorized withholding of information or resources
+		      \end{itemize}
+	\end{enumerate}
+	\textbf{Threat model}
+
+	The description of a class of attacks by:
+	\begin{itemize}
+		\item The attacker's goals
+		\item The attacker's capabilities
+	\end{itemize}
+
+	\textbf{Trade-off in security}
+	\begin{itemize}
+		\item Ease-of-use: Security mechanisms interfere with working patterns
+        users were originally familiar with
+		\item Performance: Security mechanisms consume more resources and lower
+        performance
+		\item Cost: Security mechanisms are expensive to develop and manage
+	\end{itemize}
+
+	\textbf{Threat-Vulnerability-Control}
+	\begin{itemize}
+		\item \textbf{Threat}: A set of circumstances that has the potential to cause harm (e.g. an
+        attacker with control of the workstation in the LT could maliciously gather
+        sensitive info like passwords)
+        \item \textbf{Vulnerability}: A weakness in the system (e.g. anyone can reboot the
+        workstation from USB or Disk to gain control)
+        \item \textbf{Control}: A control, countermeasure, security mechanism is a mean to counter threats
+        (e.g. restrict physical access to the workstation, disable USB booting)
+        \item \textbf{A threat is blocked by control of a vulnerability}
+	\end{itemize}
+    
+    \textbf{\uline{Topic 1: Encryption}}
+
+    \textbf{1.1 Definition: Encryption/decryption/keys}
+
+    \begin{Figure}
+        \centering
+        \includegraphics[width=\linewidth]{symmetric_key_encryption.png}
+    \end{Figure}
+
+    \begin{itemize}
+        \item A symmetric-key encryption scheme consists of encryption and decryption
+        \item A cipher must be correct and secure
+        \begin{itemize}
+            \item \textbf{Correctness}: For any plaintext $x$ and key $k$, $D_k(E_k(x)) = x$
+            \item \textbf{Security}: Definition depends on the threat models. Informally,
+            from the ciphertext, teh eavesdropper is unable to derive useful information of the
+            key $k$ or the plaintext $x$, even if the eavesdropper can probe the system.
+        \end{itemize}
+        \item Probabilistic encryption: for the same $x$, there could be different $c$'s.
+        But they all can be decrypted to the same $x$.
+    \end{itemize}
+
+
+    \textbf{1.2 Security Model and Requirement}
+    
+    \textbf{Threat model}
+    \begin{itemize}
+        \item Attacker's goal
+        \begin{itemize}
+            \item Total break (most difficult goal)
+            \begin{itemize}
+                \item Attacker wants to find the key
+            \end{itemize}
+            \item Partial break
+            \begin{itemize}
+                \item Attacker may want to decrypt a ciphertext but not interested in knowing the key
+                \item Attacker may simply want to extract some info abt the plaintext (e.g. if it is a jpg or excel file)
+            \end{itemize}
+            \item Distinguishability (weakest goal)
+            \begin{itemize}
+                \item With some non-negligible probability of $>$ 1/2, the attacker acan correctly
+                distinguish the ciphertexts of a given plaintext from the ciphertext of another given
+                plaintext 
+            \end{itemize}
+        \end{itemize}
+        \item Attacker's capability
+        \begin{itemize}
+            \item Ciphertext only attack
+            \begin{itemize}
+                \item Attacker is given a collection of ciphertext $c$. The attacker may 
+                know some properties of the plaintext (e.g. the plaintext is an English sentence)
+            \end{itemize}
+            \item Known plaintext attack
+            \begin{itemize}
+                \item The attacker is given a collection of plaintext $m$ and their corresponding
+                ciphertext $c$
+                \item Attacker might get this as they know the header or part of the plaintext
+            \end{itemize}
+            \item Chosen plaintext attack (CPA)
+            \begin{itemize}
+                \item The attacker has access to an oracle. The attacker can choose and feed any plaintext
+                $m$ to the oracle and obtain the corresponding ciphertext $c$ (all encrypted with
+                the same key). The attacker can access the oracle many times, as long as within the attacker's
+                compute power. He can see the ciphertext and then choose the next input. This black-box is an
+                \textbf{encryption oracle}. 
+                \item e.g. attacker has access to a smartcard
+                \item e.g. attacker can eavesdrop
+            \end{itemize}
+            \item Chosen ciphertext attack (CCA2)
+            \begin{itemize}
+                \item Same as CPA but the attacker chooses the ciphertext and the black-box
+                outputs the plaintext. The black-box is a \textbf{decryption oracle}.
+                \item Padding oracle is a weaker form of a decryption oracle.
+            \end{itemize}
+        \end{itemize}
+    \end{itemize}
+
+    From defender's POV, want a cipher that can protect against the attacker with the highest
+    capability. Cipher is secure against CCA2 (decryption oracle) $\implies$ secure
+    against CPA (encryption oracle)
+
+    \textbf{1.3 Classical ciphers + illustration of attacks}
+
+    \textbf{1.3.1 Substitution cipher}
+
+    \begin{itemize}
+        \item Plaintext and ciphertext are both strings over a set of symbols $U$.
+        \item The key is a 1-1 onto func from $U$ to $U$
+        \item Key space: set of all possible keys
+        \item Key space size: total number of possible keys
+        \item Key size/length: number of bits required to represent a key
+        \item Attacks
+        \begin{enumerate}
+            \item Exhaustive search (examine all possible keys 1 by 1)
+            \begin{itemize}
+                \item Running time depends on size of key space
+                \item If the table size is 27, the key can be represented by a sequence of 27
+                symbols. The size of key space is 27!. Exhaustive search eneds to carry out 27!
+                loops, which is infeasible using current compute power.
+            \end{itemize}
+            \item Known plaintext attack
+            \begin{itemize}
+                \item Given sufficiently long ciphertext, the full table can be found
+                \item Substitution cipher is not secure under known plaintext attack.
+            \end{itemize}
+            \item Ciphertext only attacker
+            \begin{itemize}
+                \item Given that the attacker knows that the plaintext is an English sentence,
+                he can do frequency analysis attack. The frequency of letters used in English is 
+                not uniform. Given a sufficiently long ciphertext, attacker may correctly guess the plaintext by 
+                mapping frequent characters in the ciphertext to the frequent character in English.
+            \end{itemize}
+        \end{enumerate}
+    \end{itemize}
+
+    \textbf{1.3.2 Permutation cipher}
+    \begin{Figure}
+        \centering
+        \includegraphics[width=\linewidth]{permutation_cipher.png}        
+    \end{Figure}
+    \begin{itemize}
+        \item AKA transposition cipher
+        \item First group the plaintext into blocks of $t$ characters, then apply a secret
+        permutation to each block by shuffling the characters
+        \item The key is the secret permutation, which is a 1-1 onto func $e$ from $\{1, 2, \ldots, t\}$
+        to $\{1, 2, \ldots, t\}$. $t$ can also be part of the key.
+        \item Attack
+        \begin{itemize}
+            \item Fails under known-plaintext attack
+            \item Easily broken under ciphertext only attack if the plaintext is English text
+        \end{itemize}
+    \end{itemize}
+
+    \textbf{1.3.3 One Time Pad}
+
+    \textbf{Properties of xor}: 
+    \begin{itemize}
+        \item Commutative: $A \oplus B = B \oplus A$
+        \item Associative: $A \oplus (B \oplus C) = (A \oplus B) \oplus C$
+        \item Identity element: $A \oplus 0 = A$
+        \item Self-inverse: $A \oplus A = 0$
+    \end{itemize}
+
+    \textbf{One Time Pad}
+    \begin{itemize}
+        \item Encryption: plaintext xor key bit by bit
+        \item Decryption: ciphertext xor key bit by bit
+        \item Key is only used once, so 1GB of plaintext would need a 1GB key to encrypt
+        \item Security
+        \begin{itemize}
+            \item From a pair of ciphertext and plaintext, attacker can derive the key
+            but useless bc key won't be used anymore
+        \end{itemize}
+    \end{itemize}
+
+    \textbf{1.4 Modern ciphers + recommended key length}
+
+    \textbf{1.4.2 Block cipher \& mode of operations}
+
+    DES/AES are known as block ciphers. Block ciphers have a fixed size of input/output.
+    AES: 128 bits (16 bytes). 
+
+    Large plaintext is divided into blocks before applying the block cipher.
+
+    \textbf{ECB (electronic code book) mode}
+    \begin{Figure}
+        \centering
+        \includegraphics[width=\linewidth]{ecb_encryption.png}        
+    \end{Figure}
+    \begin{Figure}
+        \centering
+        \includegraphics[width=\linewidth]{ecb_penguin.png}        
+    \end{Figure}
+
+    \textbf{CBC (cipher block chaining) mode on AES}
+    \begin{itemize}
+        \item Initialization vector (IV) is an arbitrary value chosen during encryption, 
+        must be different in different encryptions. 
+        \item In CBC mode, IV must be unpredictable, else it is susceptable to BEAST attack.
+        \item If IV is randomly chosen, it is unpredictable
+    \end{itemize}
+    \begin{Figure}
+        \centering
+        \includegraphics[width=\linewidth]{cbc_encryption.png}        
+    \end{Figure}
+    \begin{Figure}
+        \centering
+        \includegraphics[width=\linewidth]{cbc_decryption.png}        
+    \end{Figure}
+
+    \textbf{CTR (counter) mode}
+    \begin{Figure}
+        \centering
+        \includegraphics[width=\linewidth]{ctr_encryption.png}        
+    \end{Figure}
+    \begin{Figure}
+        \centering
+        \includegraphics[width=\linewidth]{ctr_decryption.png}        
+    \end{Figure}
+
+    \textbf{GCM mode (Galois/counter)}
+
+    Authenticated encryption, ciphertext consists of extra tag for authentication.
+    Secure in the presence of decryption oracle.
+
+    \textbf{1.4.3 Stream cipher and IVs}
+
+    Stream cipher is bit by bit. CTR mode is a "stream cipher" but it is not bit by bit.
+    \begin{Figure}
+        \centering
+        \includegraphics[width=\linewidth]{stream_cipher.png}        
+    \end{Figure}
+
+    \begin{itemize}
+        \item Need IV and no two IVs can be the same
+    \end{itemize}
+
+    \textbf{Stream cipher without IV}
+    \begin{Figure}
+        \centering
+        \includegraphics[width=\linewidth]{stream_cipher_without_iv.png}        
+    \end{Figure}
+
+    \textbf{Stream cipher with IV}
+    \begin{Figure}
+        \centering
+        \includegraphics[width=\linewidth]{stream_cipher_with_iv.png}        
+    \end{Figure}
+
+    \begin{itemize}
+        \item IV makes an encryption probabilistic
+    \end{itemize}
+    
+    \textbf{1.5 Examples of attacks on crypto}
+
+    \textbf{1.5.1 Meet-in-the-middle}
+
+    \begin{itemize}
+        \item DES is not secure $\rightarrow$ improve by encrypting multiple times using different
+        keys
+        \item Consider double encryption under known plaintext attack. Attacker has $m$ and $c$ and
+        wants to know $k_1$, $k_2$.
+        \item Using exhaustive search, amount of DES encryption/decryption would be $2^{56+56}$
+        \item Hence use meet-in-the-middle attack.
+        % Compute sets $C$ and $M$, where $C$ contains
+        % ciphertexts of $m$ encrypted with all possible keys and $M$ contains plaintexts of $c$ decrypted
+        % with all possible keys. Then find all common elements (likely only 1) in $C$ and $M$. From 
+        % common elements, obtain the 2 keys.
+        \item for $k$-bit keys, this reduces the number of crypto operations to $2^{k + 1}$
+    \end{itemize}
+
+    \begin{Figure}
+        \centering
+        \includegraphics[width=\linewidth]{meet_in_the_middle.png}        
+    \end{Figure}
+
+    \textbf{Tradeoff with time and space}
+
+    \begin{Figure}
+        \centering
+        \includegraphics[width=\linewidth]{meet_in_the_middle_tradeoff.png}        
+    \end{Figure}
+
+    \begin{itemize}
+        \item Last bit of $k_1$ fixed to 1, last bit of $k_2$ fixed to 0
+        \item Perform meet-in-the-middle on the first 2 bits of $k_1$ and $k_2$
+    \end{itemize}
+
+    \textbf{1.5.2 Padding Oracle}
+
+    Plaintext needs to be padded to split into blocks
+
+    \begin{itemize}
+        \item PKCS\#7 is a padding standard
+    \end{itemize}
+
+    \begin{Figure}
+        \includegraphics[width=0.5\linewidth]{pkcs7.png}        
+    \end{Figure}
+
+    \textbf{Padding oracle attack}
+
+    Attack model: 
+
+    Attacker has:
+    \begin{enumerate}
+        \item Ciphertext (iv, c) where the ciphertext was encrypted using $k$
+        \item Access to a padding oracle
+    \end{enumerate}
+    Attacker's goal: plaintext of (iv, c)
+
+    Padding oracle input is ciphertext, output is YES if the plaintext is in the correct
+    padding format else NO
+
+    \textbf{Padding oracle attack on AES CBC mode}
+
+    Attacker knows:
+
+    \begin{Figure}
+        \centering
+        \includegraphics[width=\linewidth]{padding_oracle_attacker_knowledge.png}
+    \end{Figure}
+
+    \begin{Figure}
+        \centering
+        \includegraphics[width=\linewidth]{padding_oracle_attack.png}
+    \end{Figure}
+
+    \begin{align*}
+        iv \oplus d(c) &= 03\\
+        iv' \oplus d(c) &= 04
+    \end{align*}
+
+    xor the 2 tgt to get $iv' = 07 \oplus iv$
+
+    \begin{align*}
+        iv' &= iv \oplus 00\ 00 \ldots t\ 07\ 07\ 07\\
+        d(C_5) \oplus t \oplus V_5 &= 04\\
+        d(C_5) \oplus V_5 \oplus t &= 04\\
+        d(C_5) \oplus V_5 &= x_5\\
+        x_5 \oplus t &= 04\\
+        x_5 &= 04 \oplus t
+    \end{align*}
+    
+    Keep guessing $t$ until padding oracle outputs YES, then we know $x_5$
+
+    To get next byte:
+    \begin{Figure}
+        \centering
+        \includegraphics[width=\linewidth]{padding_oracle_next_byte.jpg}
+    \end{Figure} 
+
+    \textbf{1.6 Pitfalls in usages and implementations}
+    \begin{enumerate}
+        \item Wrong choice of IV / reusing one-time pad
+        \item Randomness is predictable
+        \item Modify existing or design your own encryption scheme
+        \item Reliance on obscurity: Kerkchoff's principle
+        \begin{itemize}
+            \item Kerkchoff's principle: A system should be secure ven if everything about the
+            system, except the secret key, is public knowledge
+        \end{itemize}
+    \end{enumerate}
+
 \end{multicols*}
 \end{document}
