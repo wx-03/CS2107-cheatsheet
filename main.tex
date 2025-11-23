@@ -809,5 +809,56 @@
         1 - 2.7^{-km2^{-n}}
     \end{align*}
 
+    \textbf{\uline{4. PKI + Channel Security}}
+
+    \textbf{4.1 Distribution of public keys}
+    \begin{itemize}
+        \item PKC requires a secure broadcast channel to distribute public keys: PKI
+        \item If no secure way to distribute public key, attacker can impersonate by giving
+            his own public key
+        \item Certificate: A piece of document that binds a ``name'' to a ``public key'' \&
+            certified by a CA
+        \item Certificate contains:
+        \begin{itemize}
+            \item Name, public key, expiry date
+            \item Meta info: usages, type of crypto, name of CA, etc
+            \item CA's signature
+        \end{itemize}
+    \end{itemize}
+
+    \textbf{4.2 PKI}
+
+    \textbf{4.2.1 Certificate \& CA}
+
+    \begin{itemize}
+        \item Certificates are used to distribute public keys. A CA issues certificates. 
+        \item CA: trusted authority that manages a directory of public keys
+        \item CA has its own public-private key, some CA's public keys have been distributed securely 
+            through other means.
+        \item OSes and browsers have pre-loaded CA's public keys, these CAs are known as root CAs.
+        \item Other CA's public keys added through chain-of-trust
+        \item A \textbf{certificate} is a digital document containing at least the following:
+        \begin{itemize}
+            \item Name (e.g. alice@yahoo.com / bbc.com / *.bbc.com)
+            \item Public key of the owner
+            \item Time window that this cert is valid
+            \item Signature of CA
+        \end{itemize}
+    \end{itemize}
+
+    \textbf{4.2.2 CA's chain-of-trust}
+
+    \textbf{4.2.3 Revocation}
+
+    \textbf{4.3 Limitations / attacks on PKI}
+
+    \textbf{4.4 Protocol 1: Authentication}
+
+    \textbf{4.5 Protocol 2: Key Exchange}
+
+    \textbf{4.6 Protocol 3: Authenticated Key Exchange}
+
+    \textbf{4.7 Securing Communication Channel}
+
 \end{multicols*}
 \end{document}
