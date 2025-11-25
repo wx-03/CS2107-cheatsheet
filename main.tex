@@ -41,6 +41,8 @@
     \setlength\belowdisplayshortskip{2pt}%
 }
 
+\setlength{\columnsep}{6pt}
+
 \begin{document}
 \fontsize{7}{7}\selectfont
 \fontfamily{qcs}\selectfont
@@ -848,17 +850,522 @@
 
     \textbf{4.2.2 CA's chain-of-trust}
 
+    \textbf{Responsibility of CA}
+
+    \begin{itemize}
+        \item Issue certificate
+        \item Verify that information is correct (by checking that the applicant indeed owns the domain name)
+    \end{itemize}
+
+    \textbf{Certificate chain-of-trust}
+
+    \begin{itemize}
+        \item If Alice's cert is issued by CA\#1, but Bob doesn't have the public key of CA\#1, then
+            Alice can send her email, her cert, and CA\#1's cert (issued by root CA) to Bob
+        \item Bob can now:
+        \begin{itemize}
+            \item Verify CA\#1's certificate using root CA's public key
+            \item Verify Alice's certificate using CA\#1's public key
+            \item Verify Alice's email using ALice's public key
+        \end{itemize}
+        \item Bob can also obtain CA\#1's certificate from other sources
+    \end{itemize}
+
     \textbf{4.2.3 Revocation}
 
+    Reasons for revoking non-expired certs:
+
+    \begin{itemize}
+        \item Private key compromised (breaches, insider attack, vulnerability in choosing private keys)
+        \item System admin left an organization
+        \item Business entity closed
+        \item Issuing CA was compromised
+    \end{itemize}
+
+    Verifier needs to check whether certificate is still valid, even if it has not expired. 2 approaches:
+
+    \begin{itemize}
+        \item Certificate Revocation List (CRL)
+        \begin{itemize}
+            \item CA periodically signs and publishes a revocation list
+        \end{itemize}
+        \item Online Certificate Status Protocol (OCSP)
+        \begin{itemize}
+            \item OCSP Responder validates a cert in question. Need online OCSP responder
+        \end{itemize}
+    \end{itemize}
+
+    Recommendation: User periodically updates its local cache of revocation list, user does not need to check online
+    to verify a cert
+
     \textbf{4.3 Limitations / attacks on PKI}
+    \begin{enumerate}
+        \item Implementation bugs
+        \begin{itemize}
+            \item Some browsers ignore substrings in the ``name'' field after the null characters when displaying it 
+            in the address bar but include them when verifying the cert.
+            \begin{itemize}
+                \item Name in cert:\\
+                \texttt{www.comp.nus.edu.sg\char`\\0.hacker.com}
+                \item Displayed in browser as:\\
+                \texttt{www.comp.nus.edu.sg}
+            \end{itemize}
+        \end{itemize}
+        \item Users think they are connected to\\
+        \texttt{www.comp.nus.edu.sg}\\
+        but are actually connected to\\
+        \texttt{www.comp.nus.edu.sg\char`\\0.hacker.com}
+        \item Abuse by CA
+        \begin{itemize}
+            \item Rogue CA can forge any certificate
+        \end{itemize}
+        \item Social engineering
+        \begin{enumerate}
+            \item Typosquatting
+            \begin{itemize}
+                \item An attacker registers for a domain name that looks similar to another website
+            \end{itemize}
+            \item Sub-domain
+            \begin{itemize}
+                \item Attacker is the rightful owner of\\
+                \texttt{134566.com}
+                \item Attcker creates a sub domain\\
+                \texttt{luminus.nus.edu.sg.134566.com}
+                \item Attacker can get a valid certificate
+            \end{itemize}
+        \end{enumerate}
+    \end{enumerate}
 
     \textbf{4.4 Protocol 1: Authentication}
 
+    \begin{Figure}
+        \centering
+        \includegraphics[width=\linewidth]{authentication_summary.png}        
+    \end{Figure}
+
+    To prevent replay, use challenge-response
+
+    \begin{Figure}
+        \centering
+        \includegraphics[width=0.5\linewidth]{challenge_response.png}        
+    \end{Figure}
+
+    \begin{itemize}
+        \item $m$ is picked at random
+        \item $k$ is shared secret between Alice and Bob
+        \item Protocol only authenticates Alice. Unilateral authentication.
+    \end{itemize}
+
+    Can do unilateral authentication using PKC as well
+
+    \begin{Figure}
+        \centering
+        \includegraphics[width=0.5\linewidth]{unilateral_authentication_pkc.png}        
+    \end{Figure}
+
+    \begin{itemize}
+        \item Alice may send Bob certificate if required (if Bob doesn't have Alice's public key)
+    \end{itemize}
+
+    If only authentication is done, Mallory can interrupt and take over the channel 
+    after Bob is convinced that he is communicating with Alice. Use authenticated key-exchange to get a new 
+    shared secret $k$ known as session key. Then all subsequent communication will be encrypted + mac using $k$
+
     \textbf{4.5 Protocol 2: Key Exchange}
+
+    \begin{Figure}
+        \centering
+        \includegraphics[width=\linewidth]{key_exchange_summary.png}
+    \end{Figure}
+
+    \textbf{PKC-based key exchange}
+
+    \begin{Figure}
+        \centering
+        \includegraphics[width=\linewidth]{pkc_based_key_exchange.png}
+    \end{Figure}
+
+    \textbf{Diffie-Hellman key exchange}
+
+    \begin{Figure}
+        \centering
+        \includegraphics[width=\linewidth]{diffie_hellman_key_exchange.png}
+    \end{Figure}
+
+    \begin{itemize}
+        \item Alice and Bob have agreed on $g$ and $p$. They are not secret and known to the public.
+        \item Security relies on the CDH (computational diffie-hellman) assumption: given 
+            $g$, $p$, $x = g^a \mathbin{\%} p$, it is computationally infeasible to find $k = g^{ab} \mathbin{\%} p$
+    \end{itemize}
+
+    \begin{Figure}
+        \centering
+        \includegraphics[width=\linewidth]{diffie_hellman_example.png}
+    \end{Figure}
+
+    Diffie-hellman meets forward secrecy requireent but PKC based method doesn't. TLS 1.3 mandates
+    forward secrecy
 
     \textbf{4.6 Protocol 3: Authenticated Key Exchange}
 
+    Key exchange alone cannot guard against Mallory:
+
+    \begin{Figure}
+        \centering
+        \includegraphics[width=\linewidth]{mitm_key_exchange.png}
+    \end{Figure}
+
+    Need authenticated key-exchange, which can be easily obtained from existing key exchange.
+
+    \begin{itemize}
+        \item Diffie Hellman based:
+        \begin{itemize}
+            \item Sign all communication using private key. Known as station-to-station protocol.
+        \end{itemize}
+        \item PKC based:
+        \begin{itemize}
+            \item Omit setep (1) (generating public/private keys) and use Alice's existing public/private
+                keys. Since only Alice has her private key, the entity that can correctly decrypt it must be Alice
+        \end{itemize}
+    \end{itemize}
+
+    \textbf{Station-to-station Protocol}
+
+    \begin{Figure}
+        \centering
+        \includegraphics[width=\linewidth]{station_to_station.png}
+    \end{Figure}
+
+    \textbf{PKC-based Authenticated Key-exchange\\
+    (AKA RSA-based)}
+
+    \begin{Figure}
+        \centering
+        \includegraphics[width=\linewidth]{pkc_based_authenticated_key_exchange.png}
+    \end{Figure}
+
+    \textbf{Mutual Authenticated Key exchange}
+
+    \begin{itemize}
+        \item Before:
+        \begin{itemize}
+            \item Alice has a pair of public, private keys (A\textsubscript{public}, A\textsubscript{private})
+            \item Bob has a pair of public, private keys (B\textsubscript{public}, B\textsubscript{private})
+            \item Alice knows Bob's public key and vice versa. The two sets of keys are known as the long-term key or master key
+        \end{itemize}
+        \item Carry out authenticated key exchange protocol (e.g. STS). If an entity is not authentic, the other will halt.
+        \item After:
+        \begin{itemize}
+            \item Both A and B obtain shared key $k$, known as session key
+        \end{itemize}
+        \item Security requirement:
+        \begin{itemize}
+            \item (Authenticity) Alice is assured that she is communicating with an entity who knows B\textsubscript{private}
+            \item (Authenticity) Bob is assured that he is communicating with an entity who knows A\textsubscript{private}
+            \item (Confidentiality) Attacker is unable to get the session key
+        \end{itemize}
+    \end{itemize}
+
     \textbf{4.7 Securing Communication Channel}
+    
+    \textbf{TLS} 
+
+    Alice wants to visit \texttt{bob.com}.
+
+    \begin{enumerate}
+        \item Bob sends his certificate to Alice.
+        \item Alice and \texttt{bob.com} carry out unilateral authenticated key exchange protocol with Bob's public/private
+            key. After the protocol, both Bob and Alice obtain $k$, which could come in the form
+            of $k = \langle k_1, k_2 \rangle$ whwere $k_1$ is the secret key of the MAC, and $k_2$
+            is the secret key of the symmetric-key encryption, or a single key $k$ when authenticated encryption (e.g. GCM) is 
+            in use. These keys are called the session keys. By property of the protocol, Alice is convinced that
+            only Bob and herself know the session key.
+        \item Subsequent interactions between Alice and \texttt{bob.com} will be protected by the session keys and a
+            sequence number. Suppose $m_1, m_2, m_3$ are the sequence of message exchanged, 
+            the actual data to be sent for $m_i$ is
+
+            \texttt{E\textsubscript{k1}(i || m) || mac\textsubscript{k2}(E\textsubscript{k1}(i || m))} (still in use but not recommended)
+
+            For GCM mode or other authenticated encryptions, the message to be sent is simply
+
+            \texttt{E\textsubscript{k}(i || m)}
+    \end{enumerate}
+
+    \begin{Figure}
+        \centering
+        \includegraphics[width=\linewidth]{TLS.jpg}
+    \end{Figure}
+
+    \begin{itemize}
+        \item SSL and TLS are protocols that secure communication using cryptographic means
+        \item SSL is the predecessor of TLS
+        \item HTTPS is built on top of TLS
+    \end{itemize}
+
+    \textbf{TLS handshake}
+
+    \begin{Figure}
+        \centering
+        \includegraphics[width=\linewidth]{TLS_handshake.png}
+    \end{Figure}
+
+    \textbf{4.8 Forward Secrecy}
+
+    If Eve cannot recover plaintext even though she knows the master key, then the authenticated
+    key exchange achieves forward secrecy
+
+    \begin{itemize}
+        \item PKC-based authenticated key exchange does not achiever forward secrecy
+        \item Station-to-station key exchange achieves forward secrecy
+        \begin{itemize}
+            \item If attacker can solve CDH, then forward secrecy of station-to-station is compromised
+        \end{itemize}
+    \end{itemize}
+
+    \textbf{\uline{5. Network Security}}
+
+    \textbf{5.2 Background: networking}
+
+    Computer network: a collection of interconnected devices that can communicate with one
+    another 
+
+    \textbf{Network layers}
+    \begin{enumerate}
+        \item Physical (wifi, ethernet)
+        \item Data link
+        \begin{itemize}
+            \item MAC address
+        \end{itemize}
+        \item Network (IP)
+        \begin{itemize}
+            \item IP address
+        \end{itemize}
+        \item Transport (TCP, UDP)
+        \begin{itemize}
+            \item Port number
+        \end{itemize}
+        \item Application
+        \begin{itemize}
+            \item Domain name
+        \end{itemize}
+    \end{enumerate}
+    
+    \begin{Figure}
+        \centering
+        \includegraphics[width=\linewidth]{data_flow_layers.png}
+    \end{Figure}
+
+    \textbf{Transport + IP layer}
+    \begin{itemize}
+        \item Often treated as one single layer
+        \item Address of a communicating entity is an ip addr and a Port
+        \item Each node in the network has 65535 ports
+        \item Communication channel between 2 nodes is established by connecting 2 ports
+        \item Src ip, src port to dest ip, dest port
+    \end{itemize}
+
+    \textbf{5.3 Network attacker}
+
+    Unless otherwise stated, MITM can sniff, spoof, modify, drop the header and payload
+
+    MITM in layer x means MITM along the layer x virtual connection (MITM can see and modify data unit of that layer)
+
+    \begin{enumerate}
+        \item MITM in the physical layer
+        \begin{itemize}
+            \item Tap into the internet cable, sniff the wireless communication in the cafe
+        \end{itemize}
+        \item MITM in the link layer
+        \begin{itemize}
+            \item Malicious cafe owner who offers the wifi
+        \end{itemize}
+        \item MITM in the IP / Transport layer
+        \begin{itemize}
+            \item ISP (e.g. Singtel)
+        \end{itemize}
+        \item MITM in the application
+        \begin{itemize}
+            \item Malware in the browser
+        \end{itemize}
+    \end{enumerate}
+
+    \textbf{5.4 DNS attacks}
+
+    \textbf{DNS query and answer}
+
+    \begin{itemize}
+        \item Client sends a query to DNS server using UDP
+        \item DNS sends the answer back using UDP
+        \item The query contains a 16-bit number known as QID (query ID)
+        \item The response from the server must also contain a QID
+        \item If the QID in the response does not match the QID in the query, the client
+            rejects the answer
+    \end{itemize}
+
+    \textbf{DNS spoofing}
+
+    \begin{itemize}
+        \item Alice is using free cafe wifi and wants to visit and log in to \texttt{comp.nus.edu.sg}
+        \item Consider an attacker who is also in the cafe. Since the wifi is not protected, the attacker can
+        \begin{itemize}
+            \item Sniff data from the communication channel
+            \item Inject spoofed data into the communication channel
+        \end{itemize}
+        \item The attacker cannot remove/modify data sent by Alice
+        \item Attacker owns a webserver which is a spoofed NUS website
+    \end{itemize}
+
+
+    \begin{Figure}
+        \centering
+        \includegraphics[width=\linewidth]{dns_spoofing.jpg}
+    \end{Figure}
+
+    Cannot verify if response is coming from correct source or has not been modified - only matches QID
+
+    If cached into local DNS server (should have expiry), Alice will go to the fake website
+    all the time
+
+    \textbf{Denial of Service on DNS}
+
+    \begin{itemize}
+        \item A DNS server an be a ``single-point-of-failure'' of the network
+        \item DoS attacks can be launched on a web service instead of directly attacking the web server
+        \item When DNS server is down, the web service is no longer reachable
+        \item Countermeasures: redundant servers, rate limiting, etc.
+    \end{itemize}
+
+    \textbf{5.5 Poisoning ARP table}
+
+    \textbf{Address resolution protocol (ARP)}
+
+    \begin{itemize}
+        \item Resolution of IP address to mac address
+        \item Data link layer
+        \item When a device knows the IP address of the next hop router on the same network but
+            needs the corresponding MAC address
+        \item ARP resolves the router's IP address ot its MAC address to allow packet forwarding at
+            the data link layer
+    \end{itemize}
+
+    \textbf{Switch}
+
+    \begin{itemize}
+        \item Directs data packets between devices or nodes on teh same local network using MAC 
+            addresses
+        \item The switch keeps a table that associates the port to the mac addresses
+        \item Switch does not understand and does not store IP addresses.
+    \end{itemize}
+
+    \textbf{Address resolution Protocol (ARP) Table}
+    
+    \begin{itemize}
+        \item An ARP table is a database maintained by each device or nodes on a subnet
+        \begin{itemize}
+            \item Stores mappings between IP addresses and MAC addresses
+        \end{itemize}
+    \end{itemize}
+
+    Eg. if N2 wants to send to IP addr 10.0.1.4, 
+    \begin{itemize}
+        \item N2 looks up ARP table to find MAC addr
+        \item N2 sends frame to swtich, specifying destination MAC addr
+        \item Switch looks up table to find port
+        \item Switch redirects frame to correct port
+    \end{itemize}
+
+    If ARP table does not have info of a particular IP addr, N2 will broadcast an ARP request packet
+    to all devices on the local network ``Who has IP address X.X.X.X? Tell me your MAC addr''
+
+    The device with the requested IP address recieves the ARP request and replies with an ARP
+    reply packet. He sends the IP address and MAC address over. Then the requesting node will update
+    its ARP table with the new IP-to-MAC address mapping
+
+    Any node can also broadcast the info or to a specific node even if there isn't a request
+
+    \textbf{Attack: N1 wants to be MITM}
+
+    \begin{itemize}
+        \item N1 informs N2 that N3's MAC address is N1's
+        \item N1 informs N3 that N2's MAC address is N1's
+        \item ARP tables of N2 and N3 are now poisoned
+        \item All the frames will be sent to N1, and N1 can relay the frames, or modify the frames before relaying
+        \item If N1 does not forward, then it is DoS.
+    \end{itemize}
+
+    \textbf{DoS Attacks}
+
+    \begin{itemize}
+        \item Attempt to disrupt the normal functioning of a targeted server, service or network
+        $\Rightarrow$ affect availability
+        \item Many successful DoS attacks simply fllood the victims with overwhelming requests/data
+        \item DoS carried out by a large number of attackers is called DDoS (distributed denial of service)
+    \end{itemize}
+
+    \textbf{Reflection Attack}
+    \begin{itemize}
+        \item A type of DoS in which the attackers send requests to intermediate nodes, which in turn 
+            send overwhelming traffic to the victim.
+        \item Attacker spoofs the victim's IP address as the source
+        \item Intermediate nodes then send responses back to the spoofed IP (the victim)
+        \item Indirect $\Rightarrow$ more difficult to trace
+        \item Preventive measures: 
+        \begin{itemize}
+            \item Most routers are configured to not broadcast by default
+            \item Configure firewalls to block incoming ICMP echo requests packets
+                directed at broadcast addresses
+        \end{itemize}
+    \end{itemize}
+
+    \textbf{Amplification Attack}
+    \begin{itemize}
+        \item Variation of reflection attacks where the intermediate nodes response is significantly
+            larger than the attacker's request
+        \item A single request could trigger multiple responses from the intermediate nodes
+    \end{itemize}
+
+    \textbf{5.7 Securing different layers}
+
+    \textbf{SSL / TLS}
+    \begin{itemize}
+        \item Between layers 4 and 5
+        \item On top of transport layer
+        \item When an application wants to send data to the other end point, it first passes the data
+            and the address to SSL / TLS
+        \item SSL / TLS then protects the data using encryption and mac
+    \end{itemize}
+
+    \textbf{IPSec}
+    \begin{itemize}
+        \item Layer 3
+        \item Mechanism that protects the IP layer and secures all IP traffic between endpoints
+        \item Securing network connections between host-to-host, network-to-network (gateways), or
+            network-to-host (gateway and host)
+    \end{itemize}
+
+    \textbf{WPA2 (wifi protected access 2)}
+    \begin{itemize}
+        \item Layers 1 and 2
+        \item Protect data transmitted over wifi networks
+        \item Offers protection in layer 2 and layer 2
+        \item Data travelling between a wireless device and the access point is confidential
+            and protected from eavesdropping
+        \item Not all information in layer 2 are protected
+    \end{itemize}
+
+    \textbf{VPN (virtual private network)}
+    \begin{itemize}
+        \item Tunnel at layer 3
+        \item Enable remote user to securely connect to private network
+        \item VPN client and VPN server establish a connection, called a tunnel. After authentication
+            and verification, establish session keys
+        \item When Alice communicates with Bob, VPN client encrypts the entire payload and adds a new IP
+            header
+        \item From Bob's POV, Alice is communicating with teh virtual node with IP address in NUS and does not know
+            Alice's actual IP address
+    \end{itemize}
+
+
 
 \end{multicols*}
 \end{document}
