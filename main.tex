@@ -995,7 +995,7 @@
     \begin{itemize}
         \item Alice and Bob have agreed on $g$ and $p$. They are not secret and known to the public.
         \item Security relies on the CDH (computational diffie-hellman) assumption: given 
-            $g$, $p$, $x = g^a \mathbin{\%} p$, it is computationally infeasible to find $k = g^{ab} \mathbin{\%} p$
+        $g$, $p$, $x = g^a \mathbin{\%} p$, it is computationally infeasible to find $k = g^{ab} \mathbin{\%} p$
     \end{itemize}
 
     \begin{Figure}
@@ -1025,7 +1025,7 @@
         \item PKC based:
         \begin{itemize}
             \item Omit setep (1) (generating public/private keys) and use Alice's existing public/private
-                keys. Since only Alice has her private key, the entity that can correctly decrypt it must be Alice
+            keys. Since only Alice has her private key, the entity that can correctly decrypt it must be Alice
         \end{itemize}
     \end{itemize}
 
@@ -1075,20 +1075,20 @@
     \begin{enumerate}
         \item Bob sends his certificate to Alice.
         \item Alice and \texttt{bob.com} carry out unilateral authenticated key exchange protocol with Bob's public/private
-            key. After the protocol, both Bob and Alice obtain $k$, which could come in the form
-            of $k = \langle k_1, k_2 \rangle$ whwere $k_1$ is the secret key of the MAC, and $k_2$
-            is the secret key of the symmetric-key encryption, or a single key $k$ when authenticated encryption (e.g. GCM) is 
-            in use. These keys are called the session keys. By property of the protocol, Alice is convinced that
-            only Bob and herself know the session key.
+        key. After the protocol, both Bob and Alice obtain $k$, which could come in the form
+        of $k = \langle k_1, k_2 \rangle$ whwere $k_1$ is the secret key of the MAC, and $k_2$
+        is the secret key of the symmetric-key encryption, or a single key $k$ when authenticated encryption (e.g. GCM) is 
+        in use. These keys are called the session keys. By property of the protocol, Alice is convinced that
+        only Bob and herself know the session key.
         \item Subsequent interactions between Alice and \texttt{bob.com} will be protected by the session keys and a
-            sequence number. Suppose $m_1, m_2, m_3$ are the sequence of message exchanged, 
-            the actual data to be sent for $m_i$ is
+        sequence number. Suppose $m_1, m_2, m_3$ are the sequence of message exchanged, 
+        the actual data to be sent for $m_i$ is
 
-            \texttt{E\textsubscript{k1}(i || m) || mac\textsubscript{k2}(E\textsubscript{k1}(i || m))} (still in use but not recommended)
+        \texttt{E\textsubscript{k1}(i || m) || mac\textsubscript{k2}(E\textsubscript{k1}(i || m))} (still in use but not recommended)
 
-            For GCM mode or other authenticated encryptions, the message to be sent is simply
+        For GCM mode or other authenticated encryptions, the message to be sent is simply
 
-            \texttt{E\textsubscript{k}(i || m)}
+        \texttt{E\textsubscript{k}(i || m)}
     \end{enumerate}
 
     \begin{Figure}
@@ -1199,7 +1199,7 @@
         \item The query contains a 16-bit number known as QID (query ID)
         \item The response from the server must also contain a QID
         \item If the QID in the response does not match the QID in the query, the client
-            rejects the answer
+        rejects the answer
     \end{itemize}
 
     \textbf{DNS spoofing}
@@ -1243,16 +1243,16 @@
         \item Resolution of IP address to mac address
         \item Data link layer
         \item When a device knows the IP address of the next hop router on the same network but
-            needs the corresponding MAC address
+        needs the corresponding MAC address
         \item ARP resolves the router's IP address ot its MAC address to allow packet forwarding at
-            the data link layer
+        the data link layer
     \end{itemize}
 
     \textbf{Switch}
 
     \begin{itemize}
         \item Directs data packets between devices or nodes on teh same local network using MAC 
-            addresses
+        addresses
         \item The switch keeps a table that associates the port to the mac addresses
         \item Switch does not understand and does not store IP addresses.
     \end{itemize}
@@ -1313,14 +1313,14 @@
         \begin{itemize}
             \item Most routers are configured to not broadcast by default
             \item Configure firewalls to block incoming ICMP echo requests packets
-                directed at broadcast addresses
+            directed at broadcast addresses
         \end{itemize}
     \end{itemize}
 
     \textbf{Amplification Attack}
     \begin{itemize}
         \item Variation of reflection attacks where the intermediate nodes response is significantly
-            larger than the attacker's request
+        larger than the attacker's request
         \item A single request could trigger multiple responses from the intermediate nodes
     \end{itemize}
 
@@ -1331,7 +1331,7 @@
         \item Between layers 4 and 5
         \item On top of transport layer
         \item When an application wants to send data to the other end point, it first passes the data
-            and the address to SSL / TLS
+        and the address to SSL / TLS
         \item SSL / TLS then protects the data using encryption and mac
     \end{itemize}
 
@@ -1340,7 +1340,7 @@
         \item Layer 3
         \item Mechanism that protects the IP layer and secures all IP traffic between endpoints
         \item Securing network connections between host-to-host, network-to-network (gateways), or
-            network-to-host (gateway and host)
+        network-to-host (gateway and host)
     \end{itemize}
 
     \textbf{WPA2 (wifi protected access 2)}
@@ -1349,7 +1349,7 @@
         \item Protect data transmitted over wifi networks
         \item Offers protection in layer 2 and layer 2
         \item Data travelling between a wireless device and the access point is confidential
-            and protected from eavesdropping
+        and protected from eavesdropping
         \item Not all information in layer 2 are protected
     \end{itemize}
 
@@ -1358,13 +1358,133 @@
         \item Tunnel at layer 3
         \item Enable remote user to securely connect to private network
         \item VPN client and VPN server establish a connection, called a tunnel. After authentication
-            and verification, establish session keys
+        and verification, establish session keys
         \item When Alice communicates with Bob, VPN client encrypts the entire payload and adds a new IP
-            header
-        \item From Bob's POV, Alice is communicating with teh virtual node with IP address in NUS and does not know
+        header
+        \item From Bob's POV, Alice is communicating with the virtual node with IP address in NUS and does not know
             Alice's actual IP address
     \end{itemize}
 
+
+    \textbf{Which layer to protect}
+
+    \begin{itemize}
+        \item By protecting lowest layer, can protect info in all layer but not feasible.
+        \item Intermediate node need to access some higher layer info and sit in higher layer. Hence
+        malicious intermediate node could be a MITM in higher layer.
+        \item TLS / SSL + WPA2 
+        \item IPSec is expensive to implement and difficult to deploy
+    \end{itemize}
+
+    \textbf{5.6 Firewalls and IDS}
+
+    In a computer network in an organization, some nodes contain more sensitive information than other. Some nodes
+    are more ``secure'' (certain nodes operate in a more hostile environment). We need to divide the 
+    network into segments and deny unnecessary access.
+    \begin{itemize}
+        \item Principle of least privilege: control access to the network
+        \item Compartmentalization: keep things separated to limit the impact of any single failure
+            or attack
+    \end{itemize}
+    Tools to control access to the network: firewall , IDS (intrusion detection system)
+
+    \textbf{Firewall}: Gatekeeper, prevents unauthorized access
+
+    \textbf{IDS}: Watcher that raises alerts by monitoring and analysing
+
+    \textbf{Firewall and DMZ}
+
+    \begin{itemize}
+        \item A firewall controls what traffic is allowed to enter the network (ingress filtering) or leave
+        the network (egress filtering)
+        \begin{itemize}
+            \item Firewall are devices or programs that control the flow of network traffic between networks or hosts that 
+            employ differing security postures.
+        \end{itemize}
+        \item DMZ: Demilitarized zone
+        \begin{itemize}
+            \item A sub-network that exposes the organization's external service to the (untrusted) 
+            internet.
+            \item Separates an internal local area network (LAN) from untrusted external networks, usually
+            the internet.
+            \item Adds an extra layer of security to an organization's internal network.
+        \end{itemize}
+        \item DMZs are created using firewalls
+    \end{itemize}
+
+    \textbf{2-firewall setting}
+
+    \begin{Figure}
+        \centering
+        \includegraphics[width=\linewidth]{2_firewall.png}        
+    \end{Figure}
+
+    If the web / mail server in DMZ is compromised, the attacker still has to bypass
+    the back-end firewall to reach sensitive data.
+
+    One firewall restricts external access, the other restricts access to the internal network
+
+    \textbf{Packet filtering / screening}
+
+    \begin{itemize}
+        \item Firewall's controls are achieved by ``packets filtering''
+        \item Packet filtering inspects every packet, typically only on the TCP / IP packet's 
+        header information (network \& transport layer).
+        \item If the payload is inspected, we call it deep packet inspection (DPI).
+        \item Actions: Allow to pass, drop, reject, log, notify admin, modify
+    \end{itemize}
+
+    \textbf{Types of Firewall}
+
+    \begin{enumerate}
+        \item Packet filters
+        \begin{itemize}
+            \item Inspect only header (mainly IP packet's header)
+            \item Use: blocking traffic from certain IP or port
+        \end{itemize}
+        \item Stateful inspection
+        \begin{itemize}
+            \item Keep a state on previously received packets
+            \item E.g. counting number of connection a particular IP address has made in the past one hour
+            \item Use: blocking abnormal connection pattern or unauthorized session attempts
+        \end{itemize}
+        \item Proxy
+        \begin{itemize}
+            \item Act as intermediaries that fully receive inspect, and forward (possibly modify) packets between
+            client and server
+            \item Use: block certain URLs or scan for malware in HTTP traffic
+        \end{itemize}
+    \end{enumerate}
+
+    \textbf{Intrusion Detection System (IDS)}
+    \begin{itemize}
+        \item An IDS is a security tool or software that monitors computer systems and networks for signs of 
+        malicious activity, policy violations, or security breaches.
+        \item An IDS system consists of a set of ``sensors'' that gather data such as logs, network packets, etc.
+        Sensors can be deployed on hosts, or netowrk router.
+        \item Data are analyzed for intrusion either in real-time or after collection to detect suspicious
+        patterns, attacks, or abnormal behaviour.
+    \end{itemize}
+
+    \textbf{Three types of IDS}
+
+    \begin{itemize}
+        \item Attack Signature Detection
+        \begin{itemize}
+            \item Looks for specific, well-defined patterns or ``signatures'' of known attacks in the data
+            collected by sensors (e.g. using certain port number / source ip addr)
+        \end{itemize}
+        \item Abnormaly Detection
+        \begin{itemize}
+            \item IDS attempts to detect abnormal patterns that deviate from the established ``normal'' behaviour of
+            the network (e.g. sudden surge of packets with certain port number)
+        \end{itemize}
+        \item Behavior-based IDS
+        \begin{itemize}
+            \item Anomaly detection that focuses on human behaviour (e.g. system keeps the profile of
+            each user and detects any user who deviates from the profile)
+        \end{itemize}
+    \end{itemize}
 
 
 \end{multicols*}
