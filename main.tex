@@ -1486,6 +1486,140 @@
         \end{itemize}
     \end{itemize}
 
+    \textbf{\uline{6. Web security}}
+
+    \textbf{6.1 Background}
+
+    Threat model 1: attackers as another end system
+
+    \begin{Figure}
+        \centering
+        \includegraphics[width=\linewidth]{web_threat_1.png}        
+    \end{Figure}
+
+    Threat model 2: attackers as MITM
+
+    \begin{Figure}
+        \centering
+        \includegraphics[width=\linewidth]{web_threat_1.png}        
+    \end{Figure}
+
+    \begin{itemize}
+        \item Attacker is MITM in the IP or lower layer 
+        \item Can gain MITM in a few ways
+        \begin{itemize}
+            \item Cafe owner providing free wifi
+            \item DNS spoofing attack or ARP attack
+            \item Owner of the VPN server, last hop in TOR network
+        \end{itemize}
+    \end{itemize}
+
+    \textbf{6.3 Misleading user on domain name}
+
+    \begin{itemize}
+        \item Hostname could contain character that resembles ``/''
+        \item Address bar spoofing
+        \begin{itemize}
+            \item Address bar is the only indicator of which url the page is rendering
+            \item If the address bar can be ``modified'' by the webpage, an attacker could
+            trick the user to visit a malicious url X, while making the user falsely believe
+            that the url is Y.
+            \item Poorly-designed browser can allow attacker to achieve that (e.g. Last time malicious page could overlay
+            spoofed address bar on top of the actual bar. Now cannot anymore)
+        \end{itemize}
+    \end{itemize}
+
+    \textbf{6.4 Cookie and same-origin policy}
+
+    The script in a web page A (identified by URL) can access cookies stored by another web page
+    B (identified by URL) only if both A and B have the same origin.
+
+    Origin is defined as the combination of:
+    \begin{itemize}
+        \item Protocol
+        \item Hostname
+        \item Port number
+    \end{itemize}
+
+    Application of cookie: token-based authentication.
+
+    \begin{Figure}
+        \centering
+        \includegraphics[width=\linewidth]{token_based_auth.png}        
+    \end{Figure}
+
+    \textbf{Choice of token}
+    If token $t$ is a random number, server needs a db to store all issued tokens. 
+    Instead, can use
+    \begin{itemize}
+        \item (secure) MAC. Use random value or some meaningful information like expiry date, concat w mac
+        computed using the server secret key
+        \begin{itemize}
+            \item Relies on security of mac
+        \end{itemize}
+        \item (insecure) Some meaningful info concat w a sequence number that can be predicted
+        \begin{itemize}
+            \item Relies on obscurity. If attacker knows how it is generated, he can forge it
+        \end{itemize}
+    \end{itemize}
+
+    \textbf{6.5 XSS (cross site scripting) attacks}
+
+    The one where u put the \texttt{<script></script>}
+
+    In some websites, if the browser sends a text containing a substring $s$, then replying html sent
+    by server would contain $s$. Can add a script in $s$.
+
+    \textbf{Attack}
+
+    \begin{enumerate}
+        \item Attacker tricks a user to cick on a url, which contains the target website, and 
+        a malicious script $s$.
+        \item The request is sent to the server.
+        \item The server constructs a response html. The response contains the script $s$.
+        \item Browser renders the html page and runs $s$.
+        \item Malicious script could deface the original webpage or steal cookie.
+    \end{enumerate}
+
+    The attack exploits the client's trust of the server
+
+    \textbf{Types of XSS}
+
+    \begin{itemize}
+        \item Reflection (non-persistent)
+        \item Stored XSS (persistent). Script $s$ is stored in the targeted website (e.g. in forum page)
+    \end{itemize}
+
+    \textbf{Defense}
+
+    Input validation carried out by server
+
+    \textbf{XSRF (cross site request forgery / sea surf)}
+
+    Reverse of XSS. Exploits server's trust of client. 
+    
+    Example:
+    \begin{enumerate}
+        \item Suppose client A is already authenticated by a targeted website \texttt{www.bank.com} and
+        the site keeps a cookie as ``token''.
+        \item Attacker B tricks A to click on a url of S. The url maliciously requests for a service, e.g. transferring
+        \$1000 to Bob's account
+        \item Since cookie sent to S, A is already authenticated and transaction will be carried out.
+    \end{enumerate}
+
+    \textbf{Defense}
+
+    Include authentication information in request as param in url
+
+    \textbf{6.7 Other attacks}
+
+    Web tracking, drive-by-download, pixel stealing, clickjacking, user interface redress attack, CAPTCHA, click fraud
+
+    \textbf{Common simple implementation mistakes}
+
+    Client side authentication / filtering, security credential embedded in public web pages,
+    sever's secrets stored in cookies, configuration errors, URL as secrets (e.g. in password reset link or zoom link)
+
 
 \end{multicols*}
 \end{document}
