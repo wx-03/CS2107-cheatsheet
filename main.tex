@@ -12,6 +12,11 @@
 \usepackage{ulem} % Using \uline{} instead of \underline{} will make the line closer to the word
 \usepackage{xcolor}
 \usepackage{tgschola}
+\usepackage{etoolbox}
+
+% Remove vertical space before and after all verbatim environments
+\BeforeBeginEnvironment{verbatim}{\vspace{-\topsep}\vspace{-\partopsep}}
+\AfterEndEnvironment{verbatim}{\vspace{-\topsep}\vspace{-\partopsep}}
 
 \let\bar\overline
 
@@ -44,7 +49,7 @@
 \setlength{\columnsep}{6pt}
 
 \begin{document}
-\fontsize{7}{7}\selectfont
+\fontsize{5}{5}\selectfont
 \fontfamily{qcs}\selectfont
 \begin{multicols*}{5}
 	\textbf{\uline{Topic 0}}
@@ -510,10 +515,10 @@
         \item Social engineering + password reset
     \end{itemize}
 
-    \begin{Figure}
-        \centering
-        \includegraphics[width=0.9\linewidth]{social_engineering_pw_reset.png}
-    \end{Figure}
+    % \begin{Figure}
+    %     \centering
+    %     \includegraphics[width=0.9\linewidth]{social_engineering_pw_reset.png}
+    % \end{Figure}
 
     \textbf{2.2.3 Searching for the password}
 
@@ -1521,9 +1526,8 @@
         \item Address bar spoofing
         \begin{itemize}
             \item Address bar is the only indicator of which url the page is rendering
-            \item If the address bar can be ``modified'' by the webpage, an attacker could
-            trick the user to visit a malicious url X, while making the user falsely believe
-            that the url is Y.
+            \item If the address bar can be ``modified'', attacker can trick the user to visit a malicious url X,
+            but user thinks that the url is Y.
             \item Poorly-designed browser can allow attacker to achieve that (e.g. Last time malicious page could overlay
             spoofed address bar on top of the actual bar. Now cannot anymore)
         \end{itemize}
@@ -1531,15 +1535,8 @@
 
     \textbf{6.4 Cookie and same-origin policy}
 
-    The script in a web page A (identified by URL) can access cookies stored by another web page
-    B (identified by URL) only if both A and B have the same origin.
-
-    Origin is defined as the combination of:
-    \begin{itemize}
-        \item Protocol
-        \item Hostname
-        \item Port number
-    \end{itemize}
+    The script in a web page A can access cookies stored by another web page
+    B only if both A and B have the same origin (protocol, hostname, port number)
 
     Application of cookie: token-based authentication.
 
@@ -1549,6 +1546,7 @@
     \end{Figure}
 
     \textbf{Choice of token}
+
     If token $t$ is a random number, server needs a db to store all issued tokens. 
     Instead, can use
     \begin{itemize}
@@ -1619,6 +1617,315 @@
 
     Client side authentication / filtering, security credential embedded in public web pages,
     sever's secrets stored in cookies, configuration errors, URL as secrets (e.g. in password reset link or zoom link)
+
+
+    \textbf{\uline{8. Secure programing}}
+
+    Program must be correct, efficient, secure
+
+    \textbf{8.1 Unsafe function }\texttt{printf()}
+
+    \begin{itemize}
+        \item \texttt{printf(format, s)}
+        \item e.g. \texttt{printf("the value in temp is \%d\char`\\n", temp)}
+    \end{itemize}
+
+    \textbf{Example 1}
+
+    \texttt{printf("hello world \%d")} $\Rightarrow$ \texttt{printf()} will still fetch value of 
+    2nd param from the supposing location and display it $\Rightarrow$ unknowingly revealed extra info to the person observing the screen. Confidentiality
+    compromised.
+
+    \textbf{Example 2}
+    \vspace{1pt}
+    \begin{verbatim}
+        int main() {
+            char t[100];
+
+            scanf("%s", t);
+            printf(t);
+        }
+    \end{verbatim}
+
+    User can set \texttt{t} to be ``\texttt{hello world \%d}'', then can get info
+
+    \textbf{Preventive measure}
+
+    Avoid: 
+
+    \begin{itemize}
+        \item \texttt{printf(t)}
+        \item \texttt{printf(t, a1, a2)}
+    \end{itemize}
+
+    Use:
+    
+    \begin{itemize}
+        \item \texttt{printf("hello");}
+        \item \texttt{printf("The value of \%s is \%d", a1, a2);}
+    \end{itemize}
+
+    \textbf{How it can be exploited}
+    \begin{enumerate}
+        \item Obtain more information (confidentiality)
+        \item Cause the program to crash (execution integrity)
+        \item Modify the memory content using \texttt{"\%n"} (memory integrity which might lead to execution 
+        integrity)
+    \end{enumerate}
+
+    If the program that invokes \texttt{printf()} has elevated privilege, a user might be able to obtain
+    information that was previously inaccessible. 
+
+    \textbf{8.2 Data Representation}
+
+    \textbf{Example 1: string representations}
+
+    \begin{itemize}
+        \item \texttt{printf()} uses null termination. Length is not stored. 
+        \item Some systems use non-null termination.
+        \item Systems that use both null and non-null definitions to verify the certificate may get confused
+        \begin{itemize}
+            \item E.g. refer to 4.3 for when browser verfies cert based on non-null but displays name based on null.
+        \end{itemize}
+    \end{itemize}
+
+    \textbf{Example 2: IP address}
+
+    IP address can be represented as
+    \begin{itemize}
+        \item String e.g. ``132.127.8.16''
+        \item 4 integers, and each is a 32-bit integer
+        \item A single 32-bit integer
+        \item etc.
+    \end{itemize}
+
+    E.g. A blacklist is stored in 4 arrays of integers \texttt{A, B, C, D}. Function \texttt{BL}
+    takes in 4 integers \texttt{a, b, c, d} and check if the IP address represented is in the
+    blacklist. It searches for the index \texttt{i} s.t. \texttt{A[i] == a, B[i] == b, C[i] == c, D[i] == d}
+
+    Suppose another program that uses BL is written using the following flow:
+    \begin{enumerate}
+        \item Get a string \texttt{s} from user.
+        \item Extracts four integers in this way:
+        \item \texttt{a, b, c, d = int(s.split("."))} where int converts to 32-bit int
+        \item Invokes \texttt{BL(a, b, c, d)}. If TRUE, quits
+        \item Else, let $\texttt{ip} = a \times 2^{24} + b \times 2^{16} + c \times 2^8 + d$ where \texttt{ip} is a 32-bit int
+        \item Continue the rest of the processing with address \texttt{ip}
+    \end{enumerate}
+
+    The above program is vulnerable because if ip address of 11.12.1.0 is blacklisted, user can change input string
+    to ``11.12.0.256'', then a, b, c, d = 11, 12, 0, 256 and not detected by \texttt{BL} but ip becomes 11.12.1.0.
+
+    To prevent this, \textbf{use canonical representation} by converting to a standard representation immediately. Do not trust
+    input from user.
+
+    \textbf{8.3 Buffer overflow}
+
+    C and C++ do not employ ``bound check'' during runtime. Efficient but prone to bugs.
+
+    \begin{verbatim}
+        int a[5]; // Size 5, up to index 4
+        int b;
+        int main() {
+            b = 0;
+            printf("value of b is %d\n", b);
+            a[5] = 3;
+            printf("value of b is %d\n", b);
+        }
+    \end{verbatim}
+
+    Value 3 is written to \texttt{a[5]}, which is also the location of \texttt{b}
+
+    \texttt{strcpy} is also prone to buffer overflow. Use \texttt{strncpy(s1, s2, n)} instead so that at most \texttt{n}
+    chars are copied
+
+    \textbf{Heartbleed}
+
+    Heartbleed is a protocol for 2 connecting entities to check whether the connection has broken.
+
+    A to B: If u r alive, repeat after me this \texttt{x}-character string \texttt{s}.
+
+    B to A: \texttt{s}.
+
+    OpenSSL library didn't implement it securely and didn't verify that the length of the string \texttt{s} is \texttt{x}.
+    E.g. if \texttt{x = 500} but \texttt{s = "POTATO"}, B will output 500 characters starting from the location of \texttt{s} in 
+    B's memory
+
+    \textbf{Stack smashing}
+
+    Special case of buffer overflow that targets stack. Called stack overflow, stack overrun, stack smashing.
+
+    In call stack, if return address is modified, execution control flow will be changed. Can inject attacker's shell-code 
+    into the memory, then run the shell-code.
+
+    \textbf{8.4 Integer Overflow}
+    
+    \texttt{a = 254; a += 2} will give \texttt{a = 0}
+
+    The predicate that \texttt{a < a + 1} is not always true.
+
+    \textbf{8.5 Code (script) injection}
+
+    \textbf{SQL injection attack}
+
+    \texttt{SELECT * FROM client WHERE name = `\$userinput'}
+
+    User can set input to \texttt{anything' OR 1=1 --}
+
+    \textbf{Prompt injection}
+
+    If teacher use LLM to mark scripts, students can add prompts in pdf file with text same color as background.
+    LLM is confused between data and instruction.
+
+    \textbf{8.6 Undocumented access point (easter eggs)}
+
+    Programmers insert undocumented access points to inspect states for debugging purposes. E.g. by pressing certain combi of keys
+    , value of certain variables would be displayed, or for certain input str the program branches to debuggingmode
+
+    If these access points mistakenly remain in the final production system, it provides a ``back door'' for attackers.
+
+    \textbf{8.7 Race Condition (TOCTOU)}
+
+    \textbf{TOCTOU (time-of-check-time-of-use)} is a race condition in the context of security. 
+    
+    \begin{enumerate}
+        \item Process A checks the permission to access the data, followed by accessing the data
+        \item Process B (malicious) swaps the data
+    \end{enumerate}
+
+    If B manages to swap the data between time-of-check and time-of-use in A, then the attack succeeds.
+
+    \textbf{8.8 Defense and preventive measures}
+
+    \textbf{Input validatation, filtering, parameterized queries (SQL)}
+
+    Perform input validation whenever input is obtained from user. If not in expected format then reject. Can be white list or black list.
+    For both white and black list, no assurance that all malicious input will be blocked.
+
+    Difficult to design a filter that is complete (doesn't miss out any malicious string) and accepts all legitimate inputs
+
+    \textbf{Parameterized queries}
+    \begin{itemize}
+        \item Mechanisms introduced in some SQL servers to protect against SQL injection. Queries sent are divided into
+        queries and parameters.
+        \item SQL parser will know that the parameters are ``data'' and not ``script''.
+        \item SQL parser is designed to never execute any script in the parameters.
+        \item Still cannot stop XSS.
+    \end{itemize}
+
+    \begin{verbatim}
+        sqlQuery = `SELECT * FROM custTable WHERE
+                    User=? AND Pass=?'
+
+        parameters.add("User", username)
+        parameters.add("Pass", password)
+    \end{verbatim}
+
+    \textbf{Use ``safe'' function}
+
+    Use safe versions of functions that are known to create problems, e.g. \texttt{strncpy} instead of \texttt{strcpy}
+
+    But still can be vulnerable e.g. one uses a combination of \texttt{strlen()} and \texttt{strncpy()}
+
+    \textbf{Bound checks}
+
+    Some programming languages perform bound checking during runtime by storing upper and lower bounds during array instantiation
+    so for \texttt{a[i] = 5;}, check if i $<$ lower bound or i $>$ upper bound then stop else assign 5 to location
+
+    \textbf{Type safety}
+
+    Some programming languages carry out type checking to ensure that the arguments an operation gets during execution
+    are always correct. Can be done during runtime (dynamic type check) or when it is being compiled (static type check).
+
+    \textbf{Canaries}
+    
+    \begin{itemize}
+        \item Canaries are secrets inserted at carefully selected memory locations during runtime
+        \item Program halts if values are modified
+        \item Helps to detect overflow esp. stakc overflow bc if attacker wants to write to a particular
+        memory location via overflow, canaries would be modified.
+        \item But value needs to be kept secret else attacker can write secret value to canary
+        while over-running it
+    \end{itemize}
+
+    \textbf{Memory randomization}
+
+    Attacker is at an advantage when data and codes are always stored in the same locations. Address space layout
+    randomization (ASLR) can help to decrease the attacker's chance of success.
+
+    \textbf{Code inspection}
+    
+    \begin{itemize}
+        \item Manual checking (tedious)
+        \item Automated checking
+        \begin{itemize}
+            \item Taint analysis: variables that contain input from the (potentially malicious) users are labeled
+            as source. Critical functions are labeled as sink. Taint analysis checks whether the sink's arguments could
+            potentially be affected (i.e. tainted) by teh source. If so, special check (for e.g. manual inspection) would
+            be carried out. The taint analysis can be static (i.e. checking the code without ``tracing it'') or dynamic (i.e. run the code with some input).
+            \item E.g. \textbf{Sources:} user input, \textbf{Sink:} opening of system files, function that evaluates a SQL command, etc.
+        \end{itemize}
+    \end{itemize}
+
+    \textbf{Testing}
+
+    \begin{itemize}
+        \item Types:
+        \begin{itemize}
+            \item White-box testing: tester has access to source code
+            \item Black-box testing: tester does not have access to source code
+            \item Grey-box testing: Combination of the above
+        \end{itemize}
+        \item Security testing attempts to discover intentional attack, so need to test for inputs that
+        will rarely occur under normal circumstances.
+        \item Fuzzing is a technique that sends malformed inputs to discover vulnerability. More effective than sending in random input.
+        Fuzzing can be automated or semi-automated.
+    \end{itemize}
+
+
+    \textbf{Principle of Least Privilege}
+
+    The principle of least privilege (PoLP), also known as the principle of minimal privilege (PoMP) or the principle of
+    least authority (PoLA), requires that in a particular abstraction layer of a computing environment, every module (such
+    as a process, a user, or a program, depending on the subject) must be able to access only the information and
+    resources that are necessary for its legitimate purpose.
+
+    \begin{itemize}
+        \item E.g. When deploying a software system, do not grant users more access rights than
+        necessary, and avoid enabling unnecessary options.
+        \begin{itemize}
+            \item For instance, a webcam application might offer various functions that allow users to control the device
+            remotely. Typically, users can choose which features to enable or disable. As the software developer, you
+            should consider whether all features should be turned on by default when the product is delivered to clients.
+            If every feature is enabled by default, it becomes the client’s responsibility to disable those that are
+            unnecessary. However, clients may not fully understand the security implications, which can increase their
+            risk exposure.
+        \end{itemize}
+        \item E.g. in Canvas, consider the appropriate level of access to grant a student TA. If the TA’s role
+        does not require editing quizzes, they should not be given permission to modify them.
+    \end{itemize}
+
+    \textbf{Patching}
+
+    Life cycle of vulnerability:
+    Vulnerability is discovered $\rightarrow$ affected code is fixed $\rightarrow$ revised version is tested
+    $\rightarrow$ patch is made public $\rightarrow$ patch is applied
+
+    \begin{itemize}
+        \item Patch can be useful to attackers bc attackers can inspect the patch and derive the vulnerability
+        \item Number of successsful attacks goes up after vulnerability / patch is announced as more attackers are
+        aware of the exploit
+    \end{itemize}
+
+    \begin{Figure}
+        \centering
+        \includegraphics[width=0.6\linewidth]{vulnerability_life_cycle.png}        
+    \end{Figure}
+
+    \begin{itemize}
+        \item Need to apply patch timely
+        \item For critical system, not wise to apply before rigorous testing
+    \end{itemize}
 
 
 \end{multicols*}
